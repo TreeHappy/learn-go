@@ -11,6 +11,16 @@
 		"ghcr.io/prulloac/devcontainer-features/chezmoi:1": {},
 		"ghcr.io/duduribeiro/devcontainer-features/neovim:1": {
 			"version": "nightly"
+		},
+		"ghcr.io/jungaretti/features/ripgrep:1": {},
+		"ghcr.io/devcontainers-extra/features/fzf:1": {
+			"version": "latest"
+		},
+		"ghcr.io/devcontainers-extra/features/zig:1": {
+			"version": "latest"
+		},
+		"ghcr.io/devcontainers/features/sshd:1": {
+			"version": "latest"
 		}
 	}
 
