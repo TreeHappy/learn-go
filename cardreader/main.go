@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io/fs"
 	"log"
 	"os"
 	"path/filepath"
@@ -88,6 +89,12 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Unmarshal the JSON into a Card struct
+	// Insert the card into the database
+	newFunction(files, jsonDir, db)
+}
+
+func newFunction(files []fs.DirEntry, jsonDir *string, db *sql.DB) {
 	for _, file := range files {
 		if filepath.Ext(file.Name()) == ".json" {
 			filePath := filepath.Join(*jsonDir, file.Name())
@@ -97,7 +104,6 @@ func main() {
 				continue
 			}
 
-			// Unmarshal the JSON into a Card struct
 			var card Card
 			err = json.Unmarshal(data, &card)
 			if err != nil {
@@ -105,7 +111,6 @@ func main() {
 				continue
 			}
 
-			// Insert the card into the database
 			_, err = db.Exec(`
                 INSERT INTO cards (
                     id,
