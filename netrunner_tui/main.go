@@ -1,10 +1,16 @@
 package main
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
+	"log"
+	"os"
 	"strconv"
+	"strings"
 
 	"learn-go/cardreader"
+	"learn-go/netrunner_tui/tuielements"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -63,12 +69,17 @@ func HardwareView(card cardreader.Card) string {
 		Height(5).
 		AlignVertical(lipgloss.Center).
 		AlignHorizontal(lipgloss.Center)
-	influence := "\n\n\n\n\n\n"
+	influenceStyle := lipgloss.
+		NewStyle().
+		Foreground(greenForeground)
+	influenceFilledChar := "\n"
+	influenceEmptyChar := "\n"
+	influence := "\n" + strings.Repeat(influenceEmptyChar, 5-card.InfluenceCost) + strings.Repeat(influenceFilledChar, card.InfluenceCost)
 
-	s := lipgloss.JoinHorizontal(lipgloss.Left, costStyle.Render(strconv.Itoa(card.Cost)), lipgloss.PlaceHorizontal(cardWidth-3, lipgloss.Right, nameStyle.Render(card.Title))) + "\n"
-	s += lipgloss.PlaceHorizontal(cardWidth, lipgloss.Center, typeTabStyle.Render(card.CardTypeID)) + "\n"
-	s += lipgloss.JoinHorizontal(lipgloss.Left, textStyle.Render(card.Text), influence)
-	// Text
+	s := lipgloss.JoinHorizontal(lipgloss.Left, costStyle.Render(tuielements.CreditIcon+" "+strconv.Itoa(card.Cost)), lipgloss.PlaceHorizontal(cardWidth-5, lipgloss.Right, nameStyle.Render(card.Title))) + "\n"
+	s += costStyle.Render(tuielements.HardwareIcon+" ") + lipgloss.PlaceHorizontal(cardWidth-4, lipgloss.Center, typeTabStyle.Render(card.CardTypeID)) + "\n"
+	s += lipgloss.JoinHorizontal(lipgloss.Left, textStyle.Render(card.Text), influenceStyle.Render(influence))
+
 	return s
 }
 
@@ -102,15 +113,29 @@ func (m model) View() string {
 	return s
 }
 
+const (
+	DBPath = "/tmp/test.db"
+)
+
 func main() {
-	card := cardreader.Card{
-		Title:      "Bibu",
-		Cost:       4,
-		Text:       "foobar",
-		CardTypeID: "hardware",
+	dbExists := true
+	if _, err := os.Stat(DBPath); errors.Is(err, os.ErrNotExist) {
+		dbExists = false
+	}
+	// Connect to the SQLite database
+	db, err := sql.Open("sqlite3", DBPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+	if !dbExists {
+		cardreader.ImportCardsFromDirectory("/workspaces/learn-go/netrunner-cards-json/v2/cards/", db)
 	}
 
-	fmt.Println(HardwareView(card))
+	cards, _ := cardreader.ReadCardsFromDB(db)
+	for _, card := range cards {
+		fmt.Println(HardwareView(card))
+	}
 	// p := tea.NewProgram(initialModel())
 	// if _, err := p.Run(); err != nil {
 	// 	fmt.Printf("Alas, there's been an error: %v", err)
