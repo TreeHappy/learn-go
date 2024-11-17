@@ -36,6 +36,8 @@ var iconDictionary = map[string]string{
 	"[interrupt]":        InterruptIcon + " ",
 	"<strong>":           "",
 	"</strong>":          "",
+	"<em>":               "",
+	"</em>":              "",
 	"→":                  "",
 }
 
