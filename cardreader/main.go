@@ -1,4 +1,4 @@
-package main
+package cardreader
 
 import (
 	"database/sql"
@@ -91,10 +91,10 @@ func main() {
 
 	// Unmarshal the JSON into a Card struct
 	// Insert the card into the database
-	newFunction(files, jsonDir, db)
+	importCardsFromDirectory(files, jsonDir, db)
 }
 
-func newFunction(files []fs.DirEntry, jsonDir *string, db *sql.DB) {
+func importCardsFromDirectory(files []fs.DirEntry, jsonDir *string, db *sql.DB) {
 	for _, file := range files {
 		if filepath.Ext(file.Name()) == ".json" {
 			filePath := filepath.Join(*jsonDir, file.Name())
