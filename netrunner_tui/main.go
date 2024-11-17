@@ -78,7 +78,7 @@ func HardwareView(card cardreader.Card) string {
 
 	s := lipgloss.JoinHorizontal(lipgloss.Left, costStyle.Render(tuielements.CreditIcon+" "+strconv.Itoa(card.Cost)), lipgloss.PlaceHorizontal(cardWidth-5, lipgloss.Right, nameStyle.Render(card.Title))) + "\n"
 	s += costStyle.Render(tuielements.HardwareIcon+" ") + lipgloss.PlaceHorizontal(cardWidth-4, lipgloss.Center, typeTabStyle.Render(card.CardTypeID)) + "\n"
-	s += lipgloss.JoinHorizontal(lipgloss.Left, textStyle.Render(card.Text), influenceStyle.Render(influence))
+	s += lipgloss.JoinHorizontal(lipgloss.Left, textStyle.Render(tuielements.CardTextWithSymbols(card.Text)), influenceStyle.Render(influence))
 
 	return s
 }
