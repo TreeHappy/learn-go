@@ -6,81 +6,15 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strconv"
-	"strings"
 
 	"learn-go/cardreader"
 	"learn-go/netrunner_tui/tuielements"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 )
 
 type model struct {
 	cards []cardreader.Card
-}
-
-func HardwareView(card cardreader.Card) string {
-	cardWidth := 40
-	greenBackground := lipgloss.Color("#005500")
-	greenForeground := lipgloss.Color("#00aa00")
-	costBorder := lipgloss.Border{
-		Left:  "",
-		Right: "",
-	}
-	nameBorder := lipgloss.Border{
-		Left:  "",
-		Right: "█",
-	}
-	textTabBorder := lipgloss.Border{
-		Left:  "",
-		Right: "",
-	}
-	costStyle := lipgloss.
-		NewStyle().
-		Background(greenBackground).
-		Foreground(greenForeground).
-		BorderStyle(costBorder).
-		BorderLeft(true).
-		BorderRight(true).
-		BorderForeground(greenBackground)
-	nameStyle := lipgloss.
-		NewStyle().
-		Foreground(greenForeground).
-		Background(greenBackground).
-		BorderStyle(nameBorder).
-		BorderLeft(true).
-		BorderRight(true).
-		BorderForeground(greenBackground)
-	typeTabStyle := lipgloss.
-		NewStyle().
-		Foreground(greenForeground).
-		Background(greenBackground).
-		BorderStyle(textTabBorder).
-		BorderLeft(true).
-		BorderRight(true).
-		BorderForeground(greenBackground)
-	textStyle := lipgloss.
-		NewStyle().
-		Foreground(greenForeground).
-		BorderStyle(lipgloss.ThickBorder()).
-		BorderForeground(greenForeground).
-		Width(cardWidth - 3).
-		Height(5).
-		AlignVertical(lipgloss.Center).
-		AlignHorizontal(lipgloss.Center)
-	influenceStyle := lipgloss.
-		NewStyle().
-		Foreground(greenForeground)
-	influenceFilledChar := "\n"
-	influenceEmptyChar := "\n"
-	influence := "\n" + strings.Repeat(influenceEmptyChar, 5-card.InfluenceCost) + strings.Repeat(influenceFilledChar, card.InfluenceCost)
-
-	s := lipgloss.JoinHorizontal(lipgloss.Left, costStyle.Render(tuielements.CreditIcon+" "+strconv.Itoa(card.Cost)), lipgloss.PlaceHorizontal(cardWidth-5, lipgloss.Right, nameStyle.Render(card.Title))) + "\n"
-	s += costStyle.Render(tuielements.HardwareIcon+" ") + lipgloss.PlaceHorizontal(cardWidth-4, lipgloss.Center, typeTabStyle.Render(card.CardTypeID)) + "\n"
-	s += lipgloss.JoinHorizontal(lipgloss.Left, textStyle.Render(tuielements.CardTextWithSymbols(card.Text)), influenceStyle.Render(influence))
-
-	return s
 }
 
 func View(card cardreader.Card) {
@@ -134,7 +68,7 @@ func main() {
 
 	cards, _ := cardreader.ReadCardsFromDB(db)
 	for _, card := range cards {
-		fmt.Println(HardwareView(card))
+		fmt.Println(tuielements.HardwareView(card))
 	}
 	// p := tea.NewProgram(initialModel())
 	// if _, err := p.Run(); err != nil {

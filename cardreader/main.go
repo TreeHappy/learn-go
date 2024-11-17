@@ -3,9 +3,6 @@ package cardreader
 import (
 	"database/sql"
 	"encoding/json"
-	"flag"
-	"fmt"
-	"io/fs"
 	"log"
 	"os"
 	"path/filepath"
@@ -31,38 +28,55 @@ type Card struct {
 	Title         string   `json:"title"`
 }
 
-func main() {
-	// Define command-line flags
-	sqliteFile := flag.String("sqlite", "", "SQLite database file name")
-	jsonDir := flag.String("jsondir", "", "Directory of JSON files")
-
-	fmt.Println("test")
-	// Define a usage message
-	flag.Usage = func() {
-		fmt.Println("Usage:")
-		fmt.Println("  go run main.go [options]")
-		fmt.Println("Options:")
-		flag.PrintDefaults()
-		fmt.Println("Note: Both -sqlite and -jsondir options are required.")
-	}
-
-	flag.Parse()
-
-	// Check if both flags are provided
-	if *sqliteFile == "" || *jsonDir == "" {
-		flag.Usage()
-		os.Exit(1)
-	}
-
-	// Connect to the SQLite database
-	db, err := sql.Open("sqlite3", *sqliteFile)
+func ReadCardsFromDB(db *sql.DB) ([]Card, error) {
+	// Query the database
+	rows, err := db.Query("SELECT * FROM cards")
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
-	defer db.Close()
+	defer rows.Close()
 
+	// Create a slice to store the cards
+	var cards []Card
+
+	// Iterate over the rows and scan each row into a Card struct
+	for rows.Next() {
+		var card Card
+		err := rows.Scan(
+			&card.ID,
+			&card.CardTypeID,
+			&card.Cost,
+			&card.DeckLimit,
+			&card.DesignedBy,
+			&card.FactionID,
+			&card.InfluenceCost,
+			&card.IsUnique,
+			&card.SideID,
+			&card.StrippedText,
+			&card.StrippedTitle,
+			// &card.Subtypes,
+			&card.Text,
+			&card.Title,
+		)
+		if err != nil {
+			log.Fatal(err)
+			return nil, err
+		}
+		cards = append(cards, card)
+	}
+
+	// Check for any errors that occurred during iteration
+	if err := rows.Err(); err != nil {
+		log.Fatal(err)
+		return nil, err
+	}
+
+	return cards, nil
+}
+
+func ImportCardsFromDirectory(jsonDir string, db *sql.DB) {
 	// Create the cards table if it doesn't exist
-	_, err = db.Exec(`
+	_, err := db.Exec(`
         CREATE TABLE IF NOT EXISTS cards (
             id TEXT PRIMARY KEY,
             card_type_id TEXT,
@@ -84,20 +98,14 @@ func main() {
 	}
 
 	// Read JSON files from the specified directory
-	files, err := os.ReadDir(*jsonDir)
+	files, err := os.ReadDir(jsonDir)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// Unmarshal the JSON into a Card struct
-	// Insert the card into the database
-	importCardsFromDirectory(files, jsonDir, db)
-}
-
-func importCardsFromDirectory(files []fs.DirEntry, jsonDir *string, db *sql.DB) {
 	for _, file := range files {
 		if filepath.Ext(file.Name()) == ".json" {
-			filePath := filepath.Join(*jsonDir, file.Name())
+			filePath := filepath.Join(jsonDir, file.Name())
 			data, err := os.ReadFile(filePath)
 			if err != nil {
 				log.Printf("Error reading file %s: %v\n", filePath, err)
