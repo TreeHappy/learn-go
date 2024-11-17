@@ -10,7 +10,7 @@ const (
 	ProgramIcon    = ""
 	LinkIcon       = "󰿨"
 	HardwareIcon   = "󰢻"
-	SubroutineIcon = "↳"
+	SubroutineIcon = "󱞩"
 )
 
 var dictionary = map[string]string{
